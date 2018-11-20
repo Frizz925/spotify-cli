@@ -1,8 +1,8 @@
-#!/usr/bin/env python
 from threading import Thread
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 import base64
+import time
 import requests
 import urllib
 import urlparse
@@ -76,21 +76,39 @@ def get_access_token(client_id, client_secret, code):
         'code': code,
         'redirect_uri': REDIRECT_URI
     }
+    return request_access_token(client_id, client_secret, payload)
+
+def refresh_access_token(client_id, client_secret, access_token):
+    token_time = access_token['time']
+    current_time = int(time.time())
+    expires_in = access_token['expires_in']
+    if current_time - token_time < expires_in:
+        return None
+    payload = {
+        'grant_type': 'refresh_token',
+        'refresh_token': access_token['refresh_token']
+    }
+    return request_access_token(client_id, client_secret, payload)
+
+def request_access_token(client_id, client_secret, payload):
     url = 'https://accounts.spotify.com/api/token'
     headers = {
         'Authorization': 'Basic ' + base64.b64encode('%s:%s' % (client_id, client_secret)),
         'Content-Type': 'application/x-www-form-urlencoded',
     }
     r = requests.post(url, data=payload, headers=headers)
-    payload = r.json()
-    return payload['access_token']
+    r.raise_for_status()
+    access_token = r.json()
+    access_token['time'] = int(time.time())
+    return access_token
 
 def get_current_playing(access_token):
     url = 'https://api.spotify.com/v1/me/player/currently-playing'
     headers = {
-        'Authorization': 'Bearer ' + access_token
+        'Authorization': access_token['token_type'] + ' ' + access_token['access_token']
     }
     r = requests.get(url, headers=headers)
+    r.raise_for_status()
     if r.status_code == 204:
         return None
     return r.json()
