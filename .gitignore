@@ -1,5 +1,7 @@
+__pycache__/
 .vscode/
 build/
+dist/
 env/
 
 *.pyc
