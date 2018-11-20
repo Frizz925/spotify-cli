@@ -15,7 +15,6 @@ pycparser==2.19
 pyOpenSSL==18.0.0
 requests==2.20.1
 six==1.11.0
-Spotify-CLI==1.0
 trollius==2.2
 urllib3==1.24.1
 virtualenv==16.1.0
