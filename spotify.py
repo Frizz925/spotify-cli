@@ -12,8 +12,12 @@ import urllib
 import urlparse
 import webbrowser
 
-REDIRECT_URI = 'http://localhost:9020/'
 LISTENER_PORT = 9020
+REDIRECT_URI = 'http://localhost:%d' % LISTENER_PORT
+SCOPES = [
+    'user-read-currently-playing',
+    'user-read-playback-state'
+]
 
 @click.command()
 def main():
@@ -83,10 +87,7 @@ def get_authorization_url(client_id):
         'client_id': client_id,
         'response_type': 'code',
         'redirect_uri': REDIRECT_URI,
-        'scope': ' '.join([
-            'user-read-currently-playing',
-            'user-read-playback-state'
-        ])
+        'scope': ' '.join(SCOPES)
     }
     return 'https://accounts.spotify.com/authorize?' + urllib.urlencode(query)
 
