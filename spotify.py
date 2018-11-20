@@ -13,11 +13,23 @@ import urlparse
 import webbrowser
 
 LISTENER_PORT = 9020
-REDIRECT_URI = 'http://localhost:%d' % LISTENER_PORT
+REDIRECT_URI = 'http://localhost:%d/' % LISTENER_PORT
 SCOPES = [
     'user-read-currently-playing',
     'user-read-playback-state'
 ]
+RESPONSE_HTML = """
+<html>
+<head>
+    <title>Spotify CLI</title>
+</head>
+<body>
+    <script type="text/javascript">
+        window.close();
+    </script>
+</body>
+</html>
+"""
 
 @click.command()
 def main():
@@ -56,7 +68,9 @@ def get_authorization_code(client_id):
 
         def do_GET(self):
             self.send_response(200, 'OK')
+            self.send_header('Content-Type', 'text/html')
             self.end_headers()
+            self.wfile.write(RESPONSE_HTML)
 
             parsed = urlparse.parse_qs(self.path[2:])
             if 'code' not in parsed:
