@@ -45,6 +45,9 @@ def main():
     else:
         access_token = credentials['access_token']
     current_playing = get_current_playing(access_token)
+    if current_playing is None:
+        logerr('Not currently playing any track.')
+        sys.exit(1)
     print(format_current_playing(current_playing))
 
 def logerr(msg):
@@ -126,6 +129,8 @@ def get_current_playing(access_token):
         'Authorization': 'Bearer ' + access_token
     }
     r = requests.get(url, headers=headers)
+    if r.status_code == 204:
+        return None
     return r.json()
 
 def format_current_playing(playing_data):
