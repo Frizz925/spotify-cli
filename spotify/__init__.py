@@ -96,7 +96,7 @@ def refresh_access_token(client_id, client_secret, access_token):
         'grant_type': 'refresh_token',
         'refresh_token': access_token['refresh_token']
     }
-    return request_access_token(client_id, client_secret, payload)
+    return dict(access_token, **request_access_token(client_id, client_secret, payload))
 
 def request_access_token(client_id, client_secret, payload):
     url = 'https://accounts.spotify.com/api/token'
@@ -105,9 +105,9 @@ def request_access_token(client_id, client_secret, payload):
     }
     r = requests.post(url, data=payload, headers=headers, auth=(client_id, client_secret))
     r.raise_for_status()
-    access_token = r.json()
-    access_token['time'] = int(time.time())
-    return access_token
+    return dict(r.json(), **{
+        'time': int(time.time())
+    })
 
 def get_current_playing(access_token):
     url = 'https://api.spotify.com/v1/me/player/currently-playing'
