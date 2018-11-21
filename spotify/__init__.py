@@ -2,11 +2,13 @@ from threading import Thread
 try:
     # Python 3 modules
     from http.server import SimpleHTTPRequestHandler, HTTPServer
+    from urllib.parse import urlencode
     import urllib.parse as urlparse
 except ImportError:
     # Python 2 modules
     from SimpleHTTPServer import SimpleHTTPRequestHandler
     from BaseHTTPServer import HTTPServer
+    from urllib import urlencode
     import urlparse
 
 import base64
@@ -20,7 +22,7 @@ SCOPES = [
     'user-read-currently-playing',
     'user-read-playback-state'
 ]
-RESPONSE_HTML = """
+RESPONSE_HTML = b"""
 <html>
 <head>
     <title>Spotify CLI</title>
@@ -41,7 +43,7 @@ def get_authorization_code(client_id):
             self.send_response(200, 'OK')
             self.send_header('Content-Type', 'text/html')
             self.end_headers()
-            self.wfile.write(bytes(RESPONSE_HTML, 'utf-8'))
+            self.wfile.write(RESPONSE_HTML)
 
             parsed = urlparse.parse_qs(self.path[2:])
             if 'code' not in parsed:
@@ -74,7 +76,7 @@ def get_authorization_url(client_id):
         'redirect_uri': REDIRECT_URI,
         'scope': ' '.join(SCOPES)
     }
-    return 'https://accounts.spotify.com/authorize?' + urllib.parse.urlencode(query)
+    return 'https://accounts.spotify.com/authorize?' + urlencode(query)
 
 def get_access_token(client_id, client_secret, code):
     payload = {
