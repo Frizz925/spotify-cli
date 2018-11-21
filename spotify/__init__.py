@@ -1,11 +1,17 @@
 from threading import Thread
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+try:
+    # Python 3 modules
+    from http.server import SimpleHTTPRequestHandler, HTTPServer
+    import urllib.parse as urlparse
+except ImportError:
+    # Python 2 modules
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from BaseHTTPServer import HTTPServer
+    import urlparse
 
 import base64
 import time
 import requests
-import urllib
-import urlparse
 import webbrowser
 
 LISTENER_PORT = 9020
@@ -28,14 +34,14 @@ RESPONSE_HTML = """
 """
 
 def get_authorization_code(client_id):
-    class AuthorizationHandler(BaseHTTPRequestHandler):
+    class AuthorizationHandler(SimpleHTTPRequestHandler):
         last_code = None
 
         def do_GET(self):
             self.send_response(200, 'OK')
             self.send_header('Content-Type', 'text/html')
             self.end_headers()
-            self.wfile.write(RESPONSE_HTML)
+            self.wfile.write(bytes(RESPONSE_HTML, 'utf-8'))
 
             parsed = urlparse.parse_qs(self.path[2:])
             if 'code' not in parsed:
@@ -68,7 +74,7 @@ def get_authorization_url(client_id):
         'redirect_uri': REDIRECT_URI,
         'scope': ' '.join(SCOPES)
     }
-    return 'https://accounts.spotify.com/authorize?' + urllib.urlencode(query)
+    return 'https://accounts.spotify.com/authorize?' + urllib.parse.urlencode(query)
 
 def get_access_token(client_id, client_secret, code):
     payload = {
@@ -93,10 +99,9 @@ def refresh_access_token(client_id, client_secret, access_token):
 def request_access_token(client_id, client_secret, payload):
     url = 'https://accounts.spotify.com/api/token'
     headers = {
-        'Authorization': 'Basic ' + base64.b64encode('%s:%s' % (client_id, client_secret)),
         'Content-Type': 'application/x-www-form-urlencoded',
     }
-    r = requests.post(url, data=payload, headers=headers)
+    r = requests.post(url, data=payload, headers=headers, auth=(client_id, client_secret))
     r.raise_for_status()
     access_token = r.json()
     access_token['time'] = int(time.time())
