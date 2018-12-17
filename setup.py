@@ -16,7 +16,7 @@ setup(**{
     'author_email': 'Frizz925@hotmail.com',
     'entry_points': {
         'console_scripts': [
-            'spotify = spotify.cli:main'
+            'spotify-cli = spotify.cli:main'
         ]
     },
     'packages': ['spotify'],
