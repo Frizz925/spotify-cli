@@ -28,7 +28,7 @@ def main():
     if current_playing is None:
         logerr('Not currently playing any track.')
         sys.exit(1)
-    print(format_current_playing(current_playing))
+    sys.stdout.write(format_current_playing(current_playing).encode('utf-8'))
 
 def logerr(msg):
     sys.stderr.write(msg + '\n')
